@@ -1,0 +1,55 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.2"
+    defaultConfig {
+        applicationId "com.qunar.wechat.auto"
+        minSdkVersion 16
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+
+    compile 'org.apache.commons:commons-lang3:3.6'
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile 'com.google.guava:guava:20.0'
+    compile 'com.squareup.okhttp3:okhttp:3.7.0'
+    compile 'org.litepal.android:core:1.6.0'
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'commons-codec:commons-codec:1.10'
+    compile 'net.zetetic:android-database-sqlcipher:3.5.4'
+    compile 'com.qiniu:happy-dns:0.2.11'
+    compile 'net.grandcentrix.tray:tray:0.12.0'
+
+    provided 'de.robv.android.xposed:api:53'
+
+
+}
