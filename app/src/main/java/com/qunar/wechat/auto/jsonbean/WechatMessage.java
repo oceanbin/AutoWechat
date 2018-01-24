@@ -21,5 +21,6 @@ public class WechatMessage {
         public String ToUserName;
         public int issend;
         public String MsgId;
+        public String Timestamp;
     }
 }

@@ -7,6 +7,8 @@ import com.qunar.wechat.auto.common.Constants;
 import com.qunar.wechat.auto.common.TaskExecutor;
 import com.qunar.wechat.auto.jsonbean.GeneralJson;
 import com.qunar.wechat.auto.jsonbean.Remark;
+import com.qunar.wechat.auto.jsonbean.TaskListJson;
+import com.qunar.wechat.auto.jsonbean.TodoTask;
 import com.qunar.wechat.auto.jsonbean.WechatFriend;
 import com.qunar.wechat.auto.jsonbean.WechatGroup;
 import com.qunar.wechat.auto.jsonbean.WechatGroupMember;
@@ -20,6 +22,8 @@ import java.util.concurrent.Callable;
 
 import de.robv.android.xposed.XposedBridge;
 import okhttp3.Callback;
+
+import static com.qunar.wechat.auto.utils.JsonUtils.getGson;
 
 /**
  * Created by lihaibin.li on 2017/11/21.
@@ -41,7 +45,7 @@ public class WechatApi {
         try {
             String result = HttpUtils.get(GET_REMARK_URL);
             Log.d(TAG, result);
-            GeneralJson generalJson = JsonUtils.getGson().fromJson(result, GeneralJson.class);
+            GeneralJson generalJson = getGson().fromJson(result, GeneralJson.class);
             if (generalJson != null && generalJson.data != null) {
                 remark = new Remark();
                 remark.setRemark(generalJson.data.get("remark"));
@@ -53,6 +57,25 @@ public class WechatApi {
         return remark;
     }
 
+    public static List<TodoTask> getToDoTask(String wxName){
+        List<TodoTask> list = new ArrayList<>();
+        String url = String.format(Constants.GET_TODO_TASK,wxName);
+        try{
+            String result = HttpUtils.get(url);
+            TaskListJson taskListJson = JsonUtils.getGson().fromJson(result,TaskListJson.class);
+            list = taskListJson.data;
+            return list;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public static void setTaskDone(int... ids){
+        String postJson = JsonUtils.getGson().toJson(ids);
+        HttpUtils.post(Constants.SET_TASK_DONE,postJson);
+    }
+
     /**
      * 上传消息
      *
@@ -60,7 +83,7 @@ public class WechatApi {
      * @return {"ret":true,"errcode":0}
      */
     public static void uploadMessage(final WechatMessage message, Callback back) {
-        HttpUtils.post(Constants.UPLOAD_MESSAGE, JsonUtils.getGson().toJson(message), back);
+        HttpUtils.post(Constants.UPLOAD_MESSAGE, getGson().toJson(message), back);
     }
 
     /**
@@ -89,7 +112,7 @@ public class WechatApi {
                 groupMembers.add(m);
             }
             member.groupmemberlist = groupMembers;
-            final String requestBody = JsonUtils.getGson().toJson(member);
+            final String requestBody = getGson().toJson(member);
             XposedBridge.log("uploadGroupMemberList->>requestBody" + requestBody);
             TaskExecutor.submit(new Callable<String>() {
                 @Override
@@ -127,7 +150,7 @@ public class WechatApi {
         TaskExecutor.submit(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                String requestBody = JsonUtils.getGson().toJson(friend);
+                String requestBody = getGson().toJson(friend);
                 XposedBridge.log("uploadFriendsList->>" + requestBody);
                 String result = HttpUtils.post(Constants.UPLOAD_FRIEND, requestBody);
                 XposedBridge.log("uploadFriendsList->>" + result);

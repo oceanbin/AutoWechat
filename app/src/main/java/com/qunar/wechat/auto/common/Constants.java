@@ -1,4 +1,7 @@
 package com.qunar.wechat.auto.common;
+import com.qunar.wechat.auto.jsonbean.TodoTask;
+
+import java.util.List;
 
 /**
  * Created by lihaibin.li on 2017/11/9.
@@ -11,6 +14,8 @@ public class Constants {
     public static String AUTO_SEND_WX_MESSAGE;
 
     public static String WECHAT_COMMENTS_CONTENT;
+
+    public static List<TodoTask> todoTasks;
     /**
      * 微信包名
      */
@@ -29,6 +34,8 @@ public class Constants {
     public static final String SP_WECHAT_KEY_SERVICE_INTERVALMINUTE = "serviceIntervalMinute";
     public static final String SP_WECHAT_KEY_IS_DELETE_MSG_AFTER_UPLOAD = "isDeleteMsgAfterUpload";
     public static final String SP_MAX_FRIENDS_COUNT = "maxFriendsCount";
+    public static final String SP_CURRENT_FRIENDS_COUNT = "currentFriendsCount";
+    public static final String SP_CURRENT_GROUPS_COUNT = "currentGroupsCount";
     public static final String SP_IS_HAS_MESSAGE_UPLOAD = "isHasMessageUpload";
 
     /**
@@ -41,7 +48,10 @@ public class Constants {
      */
     public static final int CHAT_MESSAGE_LIMIT = 100;
 
-    public static final String HTTP_HOST = "http://wx.corp.qunar.com/laravel/public/api/";
+    //beta l-wxapp1.vc.beta.cn0.qunar.com
+//    public static final String HTTP_HOST = "http://wx.corp.qunar.com/laravel/public/api/";
+
+    public static final String HTTP_HOST = "http://l-wxapp1.vc.beta.cn0.qunar.com/laravel/public/api/";
 
     public static final String GET_USER_REMARK = HTTP_HOST + "%s?body=%s&wxname=%s";
 
@@ -50,6 +60,10 @@ public class Constants {
     public static final String UPLOAD_GROUP_MEMBER = HTTP_HOST + "wechat_wdy/uploadGroupMemberList.do";
 
     public static final String UPLOAD_FRIEND = HTTP_HOST + "wechat_wdy/uploadFriendsList.do";
+
+    public static final String GET_TODO_TASK = HTTP_HOST + "task/getTodoTasks.json?wxname=%s";
+
+    public static final String SET_TASK_DONE = HTTP_HOST + "task/setTasksDone.json";
 
     public static class Preferences{
         public static final String WX_ID = "wx_id";
@@ -61,7 +75,8 @@ public class Constants {
     public enum AutoType{
         AUTO_ACCEPT_FRIEND_REQUEST,//自动接收好友请求
         AUTO_ADD_CONTACT_FRIEND,//自动添加通讯录好友
-        AUTO_PUBLISH_WECHAT_COMMENTS//自动发朋友圈
+        AUTO_PUBLISH_WECHAT_COMMENTS,//自动发朋友圈
+        AUTO_EXCUTE_TODO_TASK//自动执行远程任务
     }
 
 }

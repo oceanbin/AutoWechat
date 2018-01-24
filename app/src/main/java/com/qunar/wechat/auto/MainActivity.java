@@ -19,9 +19,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.qunar.wechat.auto.api.WechatApi;
+import com.qunar.wechat.auto.common.BackgroundExecutor;
 import com.qunar.wechat.auto.common.Constants;
 import com.qunar.wechat.auto.event.AcceptFriendEvent;
 import com.qunar.wechat.auto.event.WechatDBEvent;
+import com.qunar.wechat.auto.jsonbean.TodoTask;
 import com.qunar.wechat.auto.utils.ContactUtil;
 import com.qunar.wechat.auto.utils.DataUtils;
 import com.qunar.wechat.auto.utils.SharedPrefsHelper;
@@ -30,6 +33,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private AccessibilityManager accessibilityManager;
-    private Button openServcice, startAutoAddFriends, insert_contact, get_wx_id,autoAddContact,send_comments;
+    private Button openServcice, startAutoAddFriends, insert_contact, get_wx_id,autoAddContact,send_comments,remoteTask;
     private TextView status;
 
     private ProgressBar upload_message_progress;
@@ -96,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Constants.LOCAL_WX_ID = DataUtils.getInstance(this).getPreferences(Constants.Preferences.WX_ID, "");
         wx_id = (TextView) findViewById(R.id.wx_id);
-        wx_id.setText("当前微信id:" + Constants.LOCAL_WX_ID);
 
         get_wx_id = (Button) findViewById(R.id.get_wx_id);
         get_wx_id.setOnClickListener(this);
@@ -108,6 +111,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         send_comments = (Button) findViewById(R.id.send_comments);
         send_comments.setOnClickListener(this);
 
+        remoteTask = (Button) findViewById(R.id.remoteTask);
+        remoteTask.setOnClickListener(this);
+
         comments_content = (EditText) findViewById(R.id.comments_content);
         weChatSp = new SharedPrefsHelper(this).getWeChatSp();
         sysMessage = (CheckBox) findViewById(R.id.sysMessage);
@@ -118,6 +124,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                weChatSp.put(Constants.SP_WECHAT_KEY_SERVICE_ISENABLED,b);
             }
         });
+    }
+
+    private void getRemoteTask(){
+        if(!TextUtils.isEmpty(Constants.LOCAL_WX_ID)){
+            BackgroundExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    List<TodoTask> list = WechatApi.getToDoTask(Constants.LOCAL_WX_ID);
+                    if(list == null){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                toast("无可执行的任务！！！");
+                                return;
+                            }
+                        });
+                    }
+//                    List<TodoTask> list = new ArrayList<TodoTask>();
+//
+//                    TodoTask todoTask1 = new TodoTask();
+//                    todoTask1.id = 3;
+//                    todoTask1.tasktype = 2;
+//                    todoTask1.params.message = "hi";
+//                    todoTask1.params.remark = "AA";
+//                    todoTask1.params.searchkey = "L19,10";
+//                    list.add(todoTask1);
+//
+//                    TodoTask todoTask = new TodoTask();
+//                    todoTask.id = 4;
+//                    todoTask.tasktype = 2;
+//                    todoTask.params.message = "hi";
+//                    todoTask.params.remark = "A";
+//                    todoTask.params.searchkey = "L19,16";
+//                    list.add(todoTask);
+                    List<TodoTask> type2Tasks = new ArrayList<>();
+                    for(TodoTask todoTask : list){
+                        if(todoTask.tasktype == 2){
+                            type2Tasks.add(todoTask);
+                        }
+                    }
+                    Constants.todoTasks = type2Tasks;
+                }
+            });
+        }
     }
 
     TimerTask timerTask = new TimerTask() {
@@ -141,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         updateServiceStatus();
+        wx_id.setText("当前微信id:" + Constants.LOCAL_WX_ID);
     }
 
     @Override
@@ -194,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    int i;
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -224,6 +274,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Constants.autoType = Constants.AutoType.AUTO_PUBLISH_WECHAT_COMMENTS;
                 Constants.WECHAT_COMMENTS_CONTENT = comments_content.getText().toString();
                 openWechat();
+                break;
+            case R.id.remoteTask:
+                Constants.autoType = Constants.AutoType.AUTO_EXCUTE_TODO_TASK;
+                getRemoteTask();
+                openWechat();
+                break;
         }
     }
 

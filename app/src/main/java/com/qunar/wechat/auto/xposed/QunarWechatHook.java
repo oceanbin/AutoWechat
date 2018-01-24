@@ -36,7 +36,9 @@ import okhttp3.Response;
  */
 
 public class QunarWechatHook implements IXposedHookLoadPackage {
-    long lastMessageTime;
+    long lastMessageTime;//最后一条消息时间
+    int currentFriendCount;//当前好友数
+    long groupModifyTime;//群组最后更改时间
     int interval = 10*1000;//上传消息时间间隔 默认10秒
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
@@ -89,13 +91,44 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                     final long serviceIntervalMs = weChatSp.getInt(Constants.SP_WECHAT_KEY_SERVICE_INTERVALMINUTE
                                             , Constants.DEFALT_SERVICE_INTERVAL_MINUTES) * 60 * 1000;
                                     final MessageSubmitBll messageSubmitBll = new MessageSubmitBll(new XposedWeChatDbRepositoryImpl(), weChatSpyContext);
-                                    //上传群组成员
-                                    WechatApi.uploadGroupMemberList(messageSubmitBll.queryGroups(),messageSubmitBll.queryCurrentWeChatUserInfo().WechatNo);
 
-                                    //上传好友
-                                    WechatApi.uploadFriendsList(messageSubmitBll.queryFriendsAndRoom());
+                                    if(lastMessageTime == 0){
+                                        lastMessageTime = messageSubmitBll.queryLastMessageTime();
+                                        saveLastMessageTime(weChatSp);
+                                    }
 
-                                    final TimerTask timerTask = new TimerTask() {
+                                    TimerTask uploadFriendTimerTask = new TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            int count = messageSubmitBll.queryFriendCount();
+                                            if(count > currentFriendCount){
+                                                currentFriendCount = count;
+                                                //上传好友
+                                                WechatApi.uploadFriendsList(messageSubmitBll.queryFriendsAndRoom());
+                                            }
+                                        }
+                                    };
+                                    Timer friendsTimer = new Timer();
+                                    friendsTimer.schedule(uploadFriendTimerTask,1000,1000);
+                                    XposedBridge.log("uploadFriendTimerTask started.");
+
+                                    TimerTask uploadGroupMemberTimerTask = new TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            long time = messageSubmitBll.queryLastGroupModifyTime();
+                                            if(groupModifyTime<time){
+                                                //上传群组成员
+                                                WechatApi.uploadGroupMemberList(messageSubmitBll.queryGroups(groupModifyTime),messageSubmitBll.queryCurrentWeChatUserInfo().WechatNo);
+                                                groupModifyTime = time;
+                                            }
+                                        }
+                                    };
+                                    Timer groupsTimer = new Timer();
+                                    groupsTimer.schedule(uploadGroupMemberTimerTask,1000,1000);
+                                    XposedBridge.log("uploadGroupMemberTimerTask started.");
+
+
+                                    final TimerTask uploadMessageTimerTask = new TimerTask() {
                                         @Override
                                         public void run() {
                                             try {
@@ -103,7 +136,7 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                                 XposedBridge.log("DBPath:" + dbPath + "\r\n" + "Password:" + password);
                                                 boolean isEnableService = weChatSp.getBoolean(Constants.SP_WECHAT_KEY_SERVICE_ISENABLED, true);
                                                 boolean isDeleteMsgAfterUpload = weChatSp.getBoolean(Constants.SP_WECHAT_KEY_IS_DELETE_MSG_AFTER_UPLOAD, false);
-                                                lastMessageTime = weChatSp.getLong(Constants.SP_WECHAT_KEY_LASTMSGTIME, 0);
+                                                lastMessageTime = weChatSp.getLong(Constants.SP_WECHAT_KEY_LASTMSGTIME, lastMessageTime);
                                                 XposedBridge.log("最后消息时间:" + lastMessageTime);
                                                 XposedBridge.log("WeChatSpy配置：serviceIntervalMs->" + serviceIntervalMs
                                                         + "; isEnableService->" + isEnableService
@@ -141,7 +174,7 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                                                 XposedBridge.log("上传消息结果:" + result);
                                                                 boolean isScuess = JsonUtils.getGson().fromJson(result, BaseJsonResult.class).ret;
                                                                 if (isScuess)
-                                                                    weChatSp.edit().putLong(Constants.SP_WECHAT_KEY_LASTMSGTIME, lastMessageTime).apply();
+                                                                    saveLastMessageTime(weChatSp);
                                                             }
                                                         }
                                                     });
@@ -153,14 +186,22 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                             }
                                         }
                                     };
-                                    Timer timer = new Timer();
-                                    timer.schedule(timerTask, 1000, interval);
-                                    XposedBridge.log("Timer started.");
+                                    Timer messageTimer = new Timer();
+                                    messageTimer.schedule(uploadMessageTimerTask, 1000, interval);
+                                    XposedBridge.log("messageTimer started.");
                                 }
                             }
                         });
             }
         });
+    }
+
+    /**
+     * 保存最后一条消息时间
+     * @param weChatSp
+     */
+    private void saveLastMessageTime(SharedPreferences weChatSp){
+        weChatSp.edit().putLong(Constants.SP_WECHAT_KEY_LASTMSGTIME, lastMessageTime).apply();
     }
 
     private void sendBroadcast(Context context,int count,boolean hasMsg){

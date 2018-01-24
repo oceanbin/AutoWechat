@@ -7,6 +7,7 @@ import android.view.accessibility.AccessibilityEvent;
 
 import com.qunar.wechat.auto.common.Constants;
 import com.qunar.wechat.auto.mission.AutoAddContactMission;
+import com.qunar.wechat.auto.mission.AutoTaskMission;
 import com.qunar.wechat.auto.task.impl.AutoAcceptFriendRequestTask;
 import com.qunar.wechat.auto.task.impl.AutoGetLocalWxIdTask;
 import com.qunar.wechat.auto.task.impl.AutoPublishCommentsTask;
@@ -22,6 +23,7 @@ public class AutoWechatService extends AccessibilityService {
     AutoGetLocalWxIdTask autoGetLocalWxIdTask = new AutoGetLocalWxIdTask();
     AutoAddContactMission autoAddContactMission = new AutoAddContactMission();
     AutoPublishCommentsTask autoPublishCommentsTask;
+    AutoTaskMission autoTaskMission = new AutoTaskMission();
 
     @Override
     protected void onServiceConnected() {
@@ -66,6 +68,12 @@ public class AutoWechatService extends AccessibilityService {
                     autoPublishCommentsTask = new AutoPublishCommentsTask(Constants.WECHAT_COMMENTS_CONTENT);
                 if (!autoPublishCommentsTask.isAccomplished()) {
                     autoPublishCommentsTask.trigger(this, event, getRootInActiveWindow());
+                }
+                break;
+            case AUTO_EXCUTE_TODO_TASK:
+                if(Constants.todoTasks == null) return;
+                if(!autoTaskMission.isAccomplished()){
+                    autoTaskMission.trigger(this,event,getRootInActiveWindow());
                 }
                 break;
         }

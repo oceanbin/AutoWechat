@@ -13,7 +13,9 @@ import com.qunar.wechat.auto.jsonbean.WechatMessage;
 import com.qunar.wechat.auto.repository.WeChatDbRepository;
 import com.qunar.wechat.auto.utils.SharedPrefsHelper;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -169,6 +171,8 @@ public class MessageSubmitBll {
         Cursor cursor = null;
         WechatMessage wechatMessage = new WechatMessage();
         List<WechatMessage.ML> messages = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
+        Calendar c = Calendar.getInstance();
         try {
             cursor = weChatDbRepository.rawQuery(sql, null);
             while (cursor.moveToNext()) {
@@ -179,7 +183,10 @@ public class MessageSubmitBll {
                 ml.ToUserName = cursor.getString(cursor.getColumnIndex("wxno"));
                 ml.issend = cursor.getInt(cursor.getColumnIndex("isSend"));
                 ml.MsgId = cursor.getString(cursor.getColumnIndex("messageId"));
-                wechatMessage.lastMessageTime = cursor.getLong(cursor.getColumnIndex("createTime"));
+                long createTime = cursor.getLong(cursor.getColumnIndex("createTime"));
+                c.setTimeInMillis(createTime);
+                ml.Timestamp = sdf.format(c.getTime());
+                wechatMessage.lastMessageTime = createTime;
                 wechatMessage.wxname = cursor.getString(cursor.getColumnIndex("wxno"));
                 messages.add(ml);
             }
@@ -197,17 +204,61 @@ public class MessageSubmitBll {
     }
 
     /**
+     * 查询所有群最后一次修改时间
+     * @return
+     */
+    public long queryLastGroupModifyTime(){
+        long modifyTime = 0;
+        String sql = "select c.modifytime from chatroom c order by c.modifytime desc limit 0,1";
+        Cursor cursor = null;
+        try{
+            cursor = weChatDbRepository.rawQuery(sql, null);
+            while (cursor.moveToNext()) {
+                modifyTime = cursor.getLong(cursor.getColumnIndex("modifytime"));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return modifyTime;
+    }
+
+    //查询最后一条消息的时间戳
+    public long queryLastMessageTime(){
+        long lastMessageTime = 0;
+        String sql = "select m.createTime from message m order by m.createTime desc limit 0,1";
+        Cursor cursor = null;
+        try{
+            cursor = weChatDbRepository.rawQuery(sql, null);
+            while (cursor.moveToNext()) {
+              lastMessageTime = cursor.getLong(cursor.getColumnIndex("createTime"));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return lastMessageTime;
+    }
+
+    /**
      * 查询群信息
      * @return
      */
-    public List<WechatGroup> queryGroups(){
+    public List<WechatGroup> queryGroups(long modifyTime){
         List<WechatGroup> wechatGroups = new ArrayList<>();
         String sql = "select c.chatroomname\n"+
                 "\t  ,c.memberlist\n"+
                 "\t  ,c.displayname\n"+
                 "\t  ,c.roomowner\n"+
                 "\t  ,c.selfDisplayName\n"+
-                "from chatroom c";
+                "\t  ,c.modifytime\n"+
+                "from chatroom c where c.modifytime>" + modifyTime;
         Cursor cursor = null;
         try {
             cursor = weChatDbRepository.rawQuery(sql, null);
@@ -215,6 +266,7 @@ public class MessageSubmitBll {
                 WechatGroup group = new WechatGroup();
                 group.roomname = cursor.getString(cursor.getColumnIndex("chatroomname"));
                 String memberlist = cursor.getString(cursor.getColumnIndex("memberlist"));
+                if(TextUtils.isEmpty(memberlist)) continue;
                 String[] members = memberlist.split(";");
                 int count = members == null?0:members.length;
                 for(int i = 0;i<count;i++){
@@ -328,7 +380,7 @@ public class MessageSubmitBll {
     public WechatFriend queryFriendsAndRoom(){
         WechatFriend wechatFriend = new WechatFriend();
         wechatFriend.wxname =queryCurrentWeChatUserInfo().WechatNo;
-        List<WechatGroup> groups = queryGroups();
+        List<WechatGroup> groups = queryGroups(0);
         List<WechatFriend.Friend> friends = queryFriend();
         for(WechatGroup group : groups){
             WechatFriend.Friend friend = new WechatFriend.Friend();
