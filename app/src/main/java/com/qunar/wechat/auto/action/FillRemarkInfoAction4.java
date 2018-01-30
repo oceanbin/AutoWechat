@@ -11,29 +11,22 @@ import com.qunar.wechat.auto.utils.AccNodeHelper;
 import java.util.List;
 
 /**
- * 自动化任务 的修改备注
- * Created by lihaibin.li on 2018/1/23.
+ * Created by lihaibin.li on 2018/1/29.
  */
 
-public class FillRemarkInfoAction3 implements Action{
+public class FillRemarkInfoAction4 implements Action {
     private String remark;
-    public FillRemarkInfoAction3(String remark){
+    public FillRemarkInfoAction4(String remark){
         this.remark = remark;
     }
     @TargetApi(18)
     @Override
     public boolean execute(Context context, AccessibilityEvent event, AccessibilityNodeInfo rootInActiveWindow) {
-        List<AccessibilityNodeInfo> nodeInfos = rootInActiveWindow.findAccessibilityNodeInfosByViewId(Constants.WECHAT_PACKAGENAME + ":id/amk");
-        if(nodeInfos == null || nodeInfos.isEmpty()){
-            return false;
-        }
-        nodeInfos.get(0).performAction(AccessibilityNodeInfo.ACTION_CLICK);
 
-        List<AccessibilityNodeInfo> inputNode = rootInActiveWindow.findAccessibilityNodeInfosByViewId(Constants.WECHAT_PACKAGENAME + ":id/amj");
+        List<AccessibilityNodeInfo> inputNode = rootInActiveWindow.findAccessibilityNodeInfosByViewId(Constants.WECHAT_PACKAGENAME + ":id/cpl");
         if(inputNode == null || inputNode.isEmpty()){
             return false;
         }
         return AccNodeHelper.setText(context,inputNode.get(0),remark,false);
-
     }
 }

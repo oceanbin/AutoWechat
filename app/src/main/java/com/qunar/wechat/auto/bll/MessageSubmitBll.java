@@ -13,9 +13,7 @@ import com.qunar.wechat.auto.jsonbean.WechatMessage;
 import com.qunar.wechat.auto.repository.WeChatDbRepository;
 import com.qunar.wechat.auto.utils.SharedPrefsHelper;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -84,11 +82,10 @@ public class MessageSubmitBll {
                 "left join userinfo u3 on u3.id = 42\n" +
                 "where u1.id = 2\n";
         Cursor cursor = null;
-        WeChatUserDo result = null;
+        WeChatUserDo result = new WeChatUserDo();
         try {
 
             cursor = weChatDbRepository.rawQuery(sql, null);
-            result = new WeChatUserDo();
             while (cursor.moveToNext()) {
                 result.WechatUid = cursor.getString(cursor.getColumnIndex("weChatUid"));
                 result.WechatNickname = cursor.getString(cursor.getColumnIndex("weChatNickname"));
@@ -171,8 +168,8 @@ public class MessageSubmitBll {
         Cursor cursor = null;
         WechatMessage wechatMessage = new WechatMessage();
         List<WechatMessage.ML> messages = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
-        Calendar c = Calendar.getInstance();
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
+//        Calendar c = Calendar.getInstance();
         try {
             cursor = weChatDbRepository.rawQuery(sql, null);
             while (cursor.moveToNext()) {
@@ -184,8 +181,9 @@ public class MessageSubmitBll {
                 ml.issend = cursor.getInt(cursor.getColumnIndex("isSend"));
                 ml.MsgId = cursor.getString(cursor.getColumnIndex("messageId"));
                 long createTime = cursor.getLong(cursor.getColumnIndex("createTime"));
-                c.setTimeInMillis(createTime);
-                ml.Timestamp = sdf.format(c.getTime());
+//                c.setTimeInMillis(createTime);
+//                sdf.format(c.getTime())
+                ml.Timestamp = String.valueOf(createTime);
                 wechatMessage.lastMessageTime = createTime;
                 wechatMessage.wxname = cursor.getString(cursor.getColumnIndex("wxno"));
                 messages.add(ml);
@@ -358,11 +356,15 @@ public class MessageSubmitBll {
      * @return
      */
     public int queryFriendCount(){
-        String sql = "SELECT * FROM rcontact where type != 33";
+        String sql = "SELECT count(1) FROM rcontact where type != 33";
         Cursor cursor = null;
         try {
+            int count = 0;
             cursor = weChatDbRepository.rawQuery(sql, null);
-            return cursor.getCount();
+            while(cursor.moveToNext()){
+                count = cursor.getInt(0);
+            }
+            return count;
         } catch (Exception e) {
             Log.d(TAG, "获取好友信息", e);
             throw e;

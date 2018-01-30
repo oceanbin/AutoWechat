@@ -2,7 +2,6 @@ package com.qunar.wechat.auto.action;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 

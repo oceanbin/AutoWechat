@@ -23,4 +23,12 @@ public class BaseAction implements Action {
 
         }
     }
+
+    protected void sleep(long millSeconds){
+        try{
+            Thread.sleep(millSeconds);
+        }catch (Exception e){
+
+        }
+    }
 }

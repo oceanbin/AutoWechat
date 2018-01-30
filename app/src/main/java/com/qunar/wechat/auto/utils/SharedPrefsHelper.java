@@ -14,7 +14,7 @@ public class SharedPrefsHelper {
     private final SharedPreferences.Editor weChatSpEditor;
 
     public SharedPrefsHelper(Context context) {
-        weChatSp = context.getSharedPreferences(Constants.SP_NAME_WECHAT,Context.MODE_WORLD_READABLE | Context.MODE_MULTI_PROCESS |Context.MODE_WORLD_WRITEABLE);
+        weChatSp = context.getSharedPreferences(Constants.SP_NAME_WECHAT,Context.MODE_APPEND);
         weChatSpEditor = weChatSp.edit();
     }
 

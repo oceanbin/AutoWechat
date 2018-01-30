@@ -19,8 +19,8 @@ import com.qunar.wechat.auto.utils.JsonUtils;
  * Created by lihaibin.li on 2018/1/23.
  */
 
-public class RemoteTodoTask extends SequentialTaskBase {
-    public RemoteTodoTask(TodoTask todoTask){
+public class RemoteTodoTask2 extends SequentialTaskBase {
+    public RemoteTodoTask2(TodoTask todoTask){
         super(new ClickByDescAction("搜索"),
                 new FillSearchContentAction(todoTask),
                 new ClickByIdToIndexAction(Constants.WECHAT_PACKAGENAME + ":id/jv",1),

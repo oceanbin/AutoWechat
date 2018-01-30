@@ -34,6 +34,11 @@ public class BackAction implements Action {
         }
 
         Log.d(TAG,"执行BackAction");
+        try{
+            Thread.sleep(1000);
+        }catch (Exception e){
+
+        }
         return AccNodeHelper.clickByParent(backNode);
     }
 }

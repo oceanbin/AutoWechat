@@ -19,14 +19,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.qunar.wechat.auto.api.WechatApi;
 import com.qunar.wechat.auto.common.BackgroundExecutor;
 import com.qunar.wechat.auto.common.Constants;
 import com.qunar.wechat.auto.event.AcceptFriendEvent;
 import com.qunar.wechat.auto.event.WechatDBEvent;
+import com.qunar.wechat.auto.jsonbean.Params;
 import com.qunar.wechat.auto.jsonbean.TodoTask;
 import com.qunar.wechat.auto.utils.ContactUtil;
 import com.qunar.wechat.auto.utils.DataUtils;
+import com.qunar.wechat.auto.utils.JsonUtils;
 import com.qunar.wechat.auto.utils.SharedPrefsHelper;
 
 import org.greenrobot.eventbus.EventBus;
@@ -131,40 +132,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             BackgroundExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    List<TodoTask> list = WechatApi.getToDoTask(Constants.LOCAL_WX_ID);
-                    if(list == null){
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                toast("无可执行的任务！！！");
-                                return;
-                            }
-                        });
-                    }
-//                    List<TodoTask> list = new ArrayList<TodoTask>();
+//                    List<TodoTask> list = WechatApi.getToDoTask(Constants.LOCAL_WX_ID);
+//                    if(list == null || list.isEmpty()){
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                toast("无可执行的任务！！！");
+//                                return;
+//                            }
+//                        });
+//                    }
+                    List<TodoTask> list = new ArrayList<TodoTask>();
 //
 //                    TodoTask todoTask1 = new TodoTask();
 //                    todoTask1.id = 3;
-//                    todoTask1.tasktype = 2;
-//                    todoTask1.params.message = "hi";
-//                    todoTask1.params.remark = "AA";
-//                    todoTask1.params.searchkey = "L19,10";
+//                    todoTask1.tasktype = 3;
+//                    Params params = new Params();
+//                    params.message = "test";
+//                    params.searchkey = "_323";
+//                    params.deadline = String.valueOf(System.currentTimeMillis());
+//                    todoTask1.params = JsonUtils.getGson().toJson(params);
 //                    list.add(todoTask1);
-//
-//                    TodoTask todoTask = new TodoTask();
-//                    todoTask.id = 4;
-//                    todoTask.tasktype = 2;
-//                    todoTask.params.message = "hi";
-//                    todoTask.params.remark = "A";
-//                    todoTask.params.searchkey = "L19,16";
-//                    list.add(todoTask);
+
+                    TodoTask todoTask2 = new TodoTask();
+                    todoTask2.id = 4;
+                    todoTask2.tasktype = 4;
+                    Params params1 = new Params();
+                    params1.message = "test";
+                    params1.searchkey = "17089793010";
+                    params1.remark = "qunar_test";
+                    todoTask2.params = JsonUtils.getGson().toJson(params1);
+                    list.add(todoTask2);
+
                     List<TodoTask> type2Tasks = new ArrayList<>();
+                    List<TodoTask> type3Tasks = new ArrayList<>();
+                    List<TodoTask> type4Tasks = new ArrayList<>();
                     for(TodoTask todoTask : list){
                         if(todoTask.tasktype == 2){
                             type2Tasks.add(todoTask);
+                        }else if(todoTask.tasktype == 3){
+                            type3Tasks.add(todoTask);
+                        }else if(todoTask.tasktype == 4){
+                            type4Tasks.add(todoTask);
                         }
                     }
-                    Constants.todoTasks = type2Tasks;
+                    Constants.todoTasks2 = type2Tasks;
+                    Constants.todoTasks3 = type3Tasks;
+                    Constants.todoTasks4 = type4Tasks;
                 }
             });
         }
@@ -213,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(event != null){
             int count = event.count;
             if(count>4500){
-                Toast.makeText(this," 已超出最大好友数！！！！！！！！！！！" + count,Toast.LENGTH_LONG).show();
+//                Toast.makeText(this," 已超出最大好友数！！！！！！！！！！！" + count,Toast.LENGTH_LONG).show();
             }else {
 //                Toast.makeText(this,"当前好友数" + count,Toast.LENGTH_LONG).show();
             }

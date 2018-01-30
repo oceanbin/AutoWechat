@@ -8,4 +8,6 @@ public class Params{
     public String searchkey;
     public String message;
     public String remark;
+    public String deadline;
+    public String whoami;
 }

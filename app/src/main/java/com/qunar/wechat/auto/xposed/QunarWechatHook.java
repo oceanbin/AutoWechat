@@ -97,10 +97,16 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                         saveLastMessageTime(weChatSp);
                                     }
 
+                                    //上传好友
+//                                    WechatApi.uploadFriendsList(messageSubmitBll.queryFriendsAndRoom());
+
                                     TimerTask uploadFriendTimerTask = new TimerTask() {
                                         @Override
                                         public void run() {
+                                            long startTime = System.currentTimeMillis();
                                             int count = messageSubmitBll.queryFriendCount();
+                                            long endTime = System.currentTimeMillis();
+                                            XposedBridge.log("friendCount:" + count + "time:" + (endTime-startTime));
                                             if(count > currentFriendCount){
                                                 currentFriendCount = count;
                                                 //上传好友
@@ -109,7 +115,7 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                         }
                                     };
                                     Timer friendsTimer = new Timer();
-                                    friendsTimer.schedule(uploadFriendTimerTask,1000,1000);
+                                    friendsTimer.schedule(uploadFriendTimerTask,1000,10*1000);
                                     XposedBridge.log("uploadFriendTimerTask started.");
 
                                     TimerTask uploadGroupMemberTimerTask = new TimerTask() {
@@ -124,7 +130,7 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                         }
                                     };
                                     Timer groupsTimer = new Timer();
-                                    groupsTimer.schedule(uploadGroupMemberTimerTask,1000,1000);
+                                    groupsTimer.schedule(uploadGroupMemberTimerTask,1000,30*1000);
                                     XposedBridge.log("uploadGroupMemberTimerTask started.");
 
 
@@ -172,9 +178,11 @@ public class QunarWechatHook implements IXposedHookLoadPackage {
                                                                     result = m.replaceAll("");
                                                                 }
                                                                 XposedBridge.log("上传消息结果:" + result);
-                                                                boolean isScuess = JsonUtils.getGson().fromJson(result, BaseJsonResult.class).ret;
-                                                                if (isScuess)
-                                                                    saveLastMessageTime(weChatSp);
+                                                                if(!result.startsWith("<!DOCTYPE")){
+                                                                    boolean isScuess = JsonUtils.getGson().fromJson(result, BaseJsonResult.class).ret;
+                                                                    if (isScuess)
+                                                                        saveLastMessageTime(weChatSp);
+                                                                }
                                                             }
                                                         }
                                                     });

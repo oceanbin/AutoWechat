@@ -15,7 +15,11 @@ public class Constants {
 
     public static String WECHAT_COMMENTS_CONTENT;
 
-    public static List<TodoTask> todoTasks;
+    public static List<TodoTask> todoTasks2;
+
+    public static List<TodoTask> todoTasks3;
+
+    public static List<TodoTask> todoTasks4;
     /**
      * 微信包名
      */
@@ -49,9 +53,9 @@ public class Constants {
     public static final int CHAT_MESSAGE_LIMIT = 100;
 
     //beta l-wxapp1.vc.beta.cn0.qunar.com
-//    public static final String HTTP_HOST = "http://wx.corp.qunar.com/laravel/public/api/";
+    public static final String HTTP_HOST = "http://wx.corp.qunar.com/laravel/public/api/";
 
-    public static final String HTTP_HOST = "http://l-wxapp1.vc.beta.cn0.qunar.com/laravel/public/api/";
+//    public static final String HTTP_HOST = "http://l-wxapp1.vc.beta.cn0.qunar.com/laravel/public/api/";
 
     public static final String GET_USER_REMARK = HTTP_HOST + "%s?body=%s&wxname=%s";
 

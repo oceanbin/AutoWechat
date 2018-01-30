@@ -99,6 +99,21 @@ public class AccNodeHelper {
         return clickableParent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
     }
 
+    public static boolean clickByParent(AccessibilityNodeInfo nodeInfo,boolean focus) {
+        if (nodeInfo == null) {
+            return false;
+        }
+
+        AccessibilityNodeInfo clickableParent = AccNodeHelper.firstClickableParent(nodeInfo);
+        if (clickableParent == null) {
+            return false;
+        }
+        if(focus){
+            clickableParent.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
+        }
+        return clickableParent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+    }
+
     public static boolean clickBySelf(AccessibilityNodeInfo nodeInfo){
         if (nodeInfo == null) {
             return false;
